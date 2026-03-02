@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoVid.ai | Wan 2.2 Pro Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #05070a; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .btn-active { border-color: #6366f1 !important; background: rgba(99, 102, 241, 0.15) !important; color: white !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="text-2xl font-black tracking-tighter flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-500 rounded-lg shadow-lg shadow-indigo-500/50"></div>
+            AutoVid<span class="text-indigo-500">.ai</span>
+        </div>
+        <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
+            Wan 2.2 MoE Engine Active
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-8 max-w-6xl">
+        <div class="flex flex-col lg:flex-row gap-10">
+            
+            <div class="w-full lg:w-5/12 space-y-6">
+                
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">1. Format</label>
+                    <div class="flex gap-2">
+                        <button id="ratio916" onclick="setRatio('9:16')" class="btn-active flex-1 py-3 rounded-xl border border-gray-800 text-gray-500 font-bold text-xs transition-all">📱 Vertical</button>
+                        <button id="ratio169" onclick="setRatio('16:9')" class="flex-1 py-3 rounded-xl border border-gray-800 text-gray-500 font-bold text-xs transition-all">💻 Wide</button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">2. Visual Style</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setStyle('cinematic', this)" class="btn-active style-btn py-2 rounded-lg border border-gray-800 text-[11px] font-bold text-gray-400">Cinematic</button>
+                        <button onclick="setStyle('anime', this)" class="style-btn py-2 rounded-lg border border-gray-800 text-[11px] font-bold text-gray-400">Anime</button>
+                        <button onclick="setStyle('cyberpunk', this)" class="style-btn py-2 rounded-lg border border-gray-800 text-[11px] font-bold text-gray-400">Cyberpunk</button>
+                        <button onclick="setStyle('3d', this)" class="style-btn py-2 rounded-lg border border-gray-800 text-[11px] font-bold text-gray-400">3D Render</button>
+                        <button onclick="setStyle('horror', this)" class="style-btn py-2 rounded-lg border border-gray-800 text-[11px] font-bold text-gray-400">Dark/Noir</button>
+                        <button onclick="setStyle('nature', this)" class="style-btn py-2 rounded-lg border border-gray-800 text-[11px] font-bold text-gray-400">Nature</button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">3. Scene Idea</label>
+                    <textarea id="prompt" class="w-full h-32 bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-white focus:border-indigo-500 outline-none transition resize-none text-sm" placeholder="e.g. A lonely knight standing in the rain..."></textarea>
+                </div>
+
+                <button id="genBtn" onclick="generate()" class="w-full py-5 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-black text-lg transition-all shadow-xl shadow-indigo-500/20 active:scale-95">
+                    GENERATE VIDEO
+                </button>
+                
+                <button id="dlBtn" class="hidden w-full py-4 bg-white/5 hover:bg-white/10 rounded-xl font-bold flex items-center justify-center gap-2 border border-white/10 transition text-sm">
+                    ⬇️ DOWNLOAD MP4
+                </button>
+            </div>
+
+            <div class="w-full lg:w-7/12">
+                <div id="stage" class="glass rounded-[2rem] overflow-hidden aspect-[9/16] lg:aspect-auto lg:h-[650px] flex items-center justify-center relative shadow-2xl transition-all duration-500">
+                    <div id="loader" class="text-center p-12 space-y-4">
+                        <div class="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto border border-gray-800">✨</div>
+                        <p class="text-gray-500 text-sm font-medium">Ready for your creation</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let selectedRatio = "720x1280";
+        let selectedStyle = "cinematic";
+
+        const STYLES = {
+            cinematic: ", cinematic, 4k, masterpiece, highly detailed, professional lighting, shot on 35mm lens, realistic skin textures, volumetric fog",
+            anime: ", studio ghibli style, high-quality anime, vibrant colors, hand-drawn aesthetic, clean lines, emotional atmosphere",
+            cyberpunk: ", cyberpunk 2077 aesthetic, neon lighting, rainy street, blue and pink hues, futuristic tech, high contrast, blade runner vibe",
+            '3d': ", unreal engine 5 render, octanerender, 8k, pixar style, soft shadows, raytracing, vibrant 3d animation",
+            horror: ", dark noir style, moody shadows, flickering lights, grainy film, mysterious atmosphere, desaturated colors",
+            nature: ", national geographic style, ultra-high definition, natural sunlight, sharp focus, lush environment, hyperrealistic"
+        };
+
+        function setRatio(ratio) {
+            selectedRatio = (ratio === '9:16') ? "720x1280" : "1280x720";
+            document.getElementById('stage').style.aspectRatio = ratio.replace(':', '/');
+            document.getElementById('ratio916').classList.toggle('btn-active', ratio === '9:16');
+            document.getElementById('ratio169').classList.toggle('btn-active', ratio === '16:9');
+        }
+
+        function setStyle(style, el) {
+            selectedStyle = style;
+            document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('btn-active'));
+            el.classList.add('btn-active');
+        }
+
+        async function generate() {
+            const promptInput = document.getElementById('prompt');
+            const btn = document.getElementById('genBtn');
+            const dlBtn = document.getElementById('dlBtn');
+            const stage = document.getElementById('stage');
+            const loader = document.getElementById('loader');
+
+            if (!promptInput.value) return alert("Describe your scene first!");
+
+            // Full Prompt = User Idea + Style Preset
+            const finalPrompt = promptInput.value + STYLES[selectedStyle];
+
+            btn.disabled = true;
+            btn.innerText = "RENDERING...";
+            dlBtn.classList.add('hidden');
+            loader.innerHTML = `<div class="flex flex-col items-center gap-4">
+                <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-indigo-400 font-bold text-xs uppercase tracking-tighter">Wan 2.2 is Dreaming</p>
+            </div>`;
+
+            try {
+                const video = await puter.ai.txt2vid(finalPrompt, { 
+                    model: "Wan-AI/Wan2.2-T2V-A14B",
+                    size: selectedRatio 
+                });
+
+                loader.classList.add('hidden');
+                video.className = "w-full h-full object-cover";
+                video.controls = true; video.autoplay = true; video.loop = true;
+                stage.innerHTML = ""; // Clear stage
+                stage.appendChild(video);
+
+                dlBtn.classList.remove('hidden');
+                dlBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = video.src;
+                    a.download = `autovid-${Date.now()}.mp4`;
+                    a.click();
+                };
+
+                btn.disabled = false;
+                btn.innerText = "GENERATE ANOTHER";
+            } catch (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerText = "GENERATE VIDEO";
+                loader.innerHTML = `<p class="text-red-500 text-xs">Credits empty or API busy. Try again.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
